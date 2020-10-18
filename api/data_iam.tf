@@ -33,4 +33,19 @@ data "aws_iam_policy_document" "api-lambda-policy-document" {
       "${module.api-s3-bucket.this_s3_bucket_arn}/*"
     ]
   }
+
+  statement {
+    actions = [
+      "dynamodb:BatchGetItem",
+      "dynamodb:BatchWriteItem",
+      "dynamodb:GetItem",
+      "dynamodb:DeleteItem",
+      "dynamodb:Query",
+      "dynamodb:PutItem",
+      "dynamodb:Scan"
+    ]
+    resources = [
+      "${module.api-dynamodb.this_dynamodb_table_arn}/*"
+    ]
+  }
 }

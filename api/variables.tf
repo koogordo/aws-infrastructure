@@ -66,3 +66,8 @@ variable "api-lambda-role-name" {
   type = string
   default = ""
 }
+
+variable "api-dynamodb-table-name" {
+  type =string
+  default = ""
+}

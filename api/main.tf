@@ -22,7 +22,7 @@ module "api-lambda" {
 }
 
 
-resource "aws_lambda_permission" "apigw" {
+resource "aws_lambda_permission" "api-gateway-lambda-invoke" {
   statement_id  = "AllowAPIGatewayInvoke"
   action        = "lambda:InvokeFunction"
   function_name = module.api-lambda.this_lambda_function_name
@@ -39,7 +39,6 @@ module "api-gateway" {
   name = var.api-gateway-name
   api_version = var.api-gateway-version
   description = var.api-gateway-description
-  domain_name = "api-domain-name"
   create_api_domain_name = false
   cors_configuration = {
     allow_headers = var.api-gateway-cors-config-allow-headers
@@ -47,7 +46,7 @@ module "api-gateway" {
     allow_origins = var.api-gateway-cors-config-allow-origins
   }
   integrations = {
-    "POST /${module.api-lambda.this_lambda_function_name}" = {
+    "POST /" = {
       lambda_arn             = module.api-lambda.this_lambda_function_arn
       payload_format_version = "2.0"
       timeout_milliseconds   = 12000
@@ -61,6 +60,32 @@ module "api-gateway" {
 
 }
 
+module "api-dynamodb" {
+  source = "git::https://github.com/terraform-aws-modules/terraform-aws-dynamodb-table.git?ref=v0.9.0"
+
+  name      = var.api-dynamodb-table-name
+  hash_key  = "partition_key"
+  range_key = "sort_key"
+
+  attributes = [
+    {
+      name = "partition_key"
+      type = "S"
+    },
+    {
+      name = "sort_key"
+      type = "S"
+    }
+  ]
+
+  global_secondary_indexes = [
+    {
+      name               = "SortKey"
+      hash_key           = "sort_key"
+      projection_type    = "ALL"
+    }
+  ]
+}
 //resource "aws_iam_role" "api-lambda-role" {
 //  name = var.api-lambda-role-name
 //  assume_role_policy = ""
